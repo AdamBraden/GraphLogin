@@ -9,8 +9,27 @@
     d:DesignHeight="110"
     d:DesignWidth="350">
 
-    <Grid Margin="0,0,0,0">
-        <Image x:Name="profilePic" HorizontalAlignment="Left" Height="96" Margin="7,7,0,0" VerticalAlignment="Top" Width="96" Source="Assets/person-placeholder.jpg"/>
+    <Grid Margin="0,0,0,0" Tapped="Grid_Tapped">
+        <FlyoutBase.AttachedFlyout>
+            <MenuFlyout Placement="Bottom">
+                <MenuFlyout.MenuFlyoutPresenterStyle>
+                    <Style TargetType="MenuFlyoutPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="MinWidth" Value="336"/>
+                        <Setter Property="Margin" Value="-100,0,0,0"/>
+                    </Style>
+                </MenuFlyout.MenuFlyoutPresenterStyle>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Width="336"  Text="Sign in with another account" Click="SwitchAccount_Click" />
+                <MenuFlyoutItem Width="336" Text="Sign out" Click="SignOut_Click" />
+            </MenuFlyout>
+        </FlyoutBase.AttachedFlyout>
+        <Ellipse Height="96" Width="96" Margin="7,7,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Ellipse.Fill>
+                <ImageBrush x:Name="profilePic" ImageSource="Assets/person-placeholder.jpg" Stretch="UniformToFill"/>
+            </Ellipse.Fill>
+        </Ellipse>
         <TextBlock x:Name="displayName" HorizontalAlignment="Left" Height="30" Margin="110,15,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240" FontWeight="Bold" FontSize="18"/>
         <TextBlock x:Name="emailName" HorizontalAlignment="Left" Height="30" Margin="110,61,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240"/>
     </Grid>

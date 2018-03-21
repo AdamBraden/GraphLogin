@@ -28,17 +28,20 @@ namespace GraphLoginSample
             this.InitializeComponent();
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             login.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
-            System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
-            var gsc = await login.SignInAsync();
+            //System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
+            login.SignInAsync();
 
         }
 
-        private void login_SignInCompleted(object sender, GraphLogin.SignInEventArgs e)
+        private async void login_SignInCompleted(object sender, GraphLogin.SignInEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine(e.User.DisplayName);
+            var graphClient = e.GraphClient;
+            Microsoft.Graph.User loggedInUser = await graphClient.Me.Request().GetAsync();
+
+            System.Diagnostics.Debug.WriteLine(loggedInUser.DisplayName);
         }
     }
 }

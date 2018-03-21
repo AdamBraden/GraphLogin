@@ -56,7 +56,7 @@ namespace GraphLoginSample
         public BitmapImage BackgroundImage {
             get { return _backgroundImage;  }
             set { _backgroundImage = value;
-                    profilePic.Source = _backgroundImage;
+                    profilePic.ImageSource = _backgroundImage;
                 }
         }
 
@@ -82,51 +82,58 @@ namespace GraphLoginSample
         /// <summary>
         /// Signout of the Microsoft Graph
         /// </summary>
-        public void SignOut()
+        public void SignOut(RoutedEventArgs e)
         {
             //clear user info
-            profilePic.Source = new BitmapImage(new Uri("ms-appx:///Assets/person-placeholder.jpg"));
+            profilePic.ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/person-placeholder.jpg"));
             displayName.Text = "";
             emailName.Text = "";
+
+            //release internal objects
+            _currentUser = null;
+
+            //fire event for consumers
+            SignOutCompleted?.Invoke(this, e);
+
         }
-        public async Task<GraphServiceClient> SignInAsync(bool Prompt = false)
+
+        public async void SignInAsync(bool Prompt = false)
         {
             var _client = new GraphServiceClient(
                  new DelegateAuthenticationProvider(
                                                     async (requestMessage) =>
                                                     {
-                                                        var token = await GetTokenForUserAsync();
+                                                        var token = await GetTokenForUserAsync(Prompt);
                                                         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
                                                     }));
 
+            //update UI
             var _user = await _client.Me.Request().GetAsync();
             var _pic = await _client.Me.Photo.Content.Request().GetAsync();
             LoadUserInfo(_user);
             LoadProfilePicture(_pic);
 
             //if the user changed, fire the event
+            //the graphserviceclient instance is returned through the eventargs
             if (_currentUser != _user)
             {
                 _currentUser = _user;
 
                 //see if anyone is listening
-                if (SignInCompleted != null)
-                {
-                    var signInEventArgs = new SignInEventArgs(_currentUser);
-                    SignInCompleted(this, signInEventArgs);
-                }
+                SignInCompleted?.Invoke(this, new SignInEventArgs(_client));
             }
-            return _client;
+
 
         }
 
-        private async Task<string> GetTokenForUserAsync()
+        private async Task<string> GetTokenForUserAsync(bool Prompt = false)
         {
             //for most Enteprise apps, we only care about AAD version of MSGraph
             string authority = "organizations";
             string resource = "https://graph.microsoft.com";    //Microsoft Graph
             string TokenForUser = null;
-            
+            WebTokenRequestPromptType _prompt = WebTokenRequestPromptType.Default;
+
             var wap = await WebAuthenticationCoreManager.FindAccountProviderAsync("https://login.microsoft.com", authority);
             
             //WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host = "";
@@ -135,7 +142,11 @@ namespace GraphLoginSample
             // craft the token request for the Graph api
             //What is the correct scope?
             Scope = "";  //null will cause an error
-            WebTokenRequest wtr = new WebTokenRequest(wap, Scope, ClientId);
+
+            if (Prompt == true) { _prompt = WebTokenRequestPromptType.ForceAuthentication; }
+            
+
+            WebTokenRequest wtr = new WebTokenRequest(wap, Scope, ClientId, _prompt);
             wtr.Properties.Add("resource", resource);
             
             WebTokenRequestResult wtrr = await WebAuthenticationCoreManager.RequestTokenAsync(wtr);
@@ -175,7 +186,7 @@ namespace GraphLoginSample
             memStream.Position = 0;
             var bitmap = new BitmapImage();
             bitmap.SetSource(memStream.AsRandomAccessStream());
-            profilePic.Source = bitmap;
+            profilePic.ImageSource = bitmap;
             
         }
 
@@ -183,15 +194,15 @@ namespace GraphLoginSample
         #region Event Definition
         public class SignInEventArgs : EventArgs
         {
-            private Microsoft.Graph.User _User;
+            private Microsoft.Graph.GraphServiceClient _graphClient;
 
-            public SignInEventArgs(User user)
+            public SignInEventArgs(GraphServiceClient GraphClient)
             {
-                _User = user;
+                _graphClient = GraphClient;
             }
-            public Microsoft.Graph.User User
+            public Microsoft.Graph.GraphServiceClient GraphClient
             {
-                get { return this._User; }
+                get { return this._graphClient; }
             }
 
         }
@@ -199,8 +210,32 @@ namespace GraphLoginSample
         
         //Event name 
         public event SignInHandler SignInCompleted;
+        public event SignOutHandler SignOutCompleted;
         public delegate void SignInHandler(object sender, SignInEventArgs e);
-       
+        public delegate void SignOutHandler(object sender, RoutedEventArgs e);
+
         #endregion
+
+        private void SwitchAccount_Click(object sender, RoutedEventArgs e)
+        {
+            //implement switching account - signout and call WAM with prompt UI
+            SignOut(e);
+
+            //signin, this will also fire the signincompleted event
+            SignInAsync(true);
+
+        }
+
+        private void SignOut_Click(object sender, RoutedEventArgs e)
+        {
+            //implement sign out
+            SignOut(e);
+
+        }
+
+        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
     }
 }
