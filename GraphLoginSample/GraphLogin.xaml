@@ -1,0 +1,17 @@
+﻿<UserControl
+    x:Class="GraphLoginSample.GraphLogin"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GraphLoginSample"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="110"
+    d:DesignWidth="350">
+
+    <Grid Margin="0,0,0,0">
+        <Image x:Name="profilePic" HorizontalAlignment="Left" Height="96" Margin="7,7,0,0" VerticalAlignment="Top" Width="96" Source="Assets/person-placeholder.jpg"/>
+        <TextBlock x:Name="displayName" HorizontalAlignment="Left" Height="30" Margin="110,15,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240" FontWeight="Bold" FontSize="18"/>
+        <TextBlock x:Name="emailName" HorizontalAlignment="Left" Height="30" Margin="110,61,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240"/>
+    </Grid>
+</UserControl>
