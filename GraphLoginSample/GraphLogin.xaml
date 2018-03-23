@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="GraphLoginSample.GraphLogin"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,28 +9,35 @@
     d:DesignHeight="110"
     d:DesignWidth="350">
 
-    <Grid Margin="0,0,0,0" Tapped="Grid_Tapped">
+    <Grid Margin="0,0,0,0" Tapped="Grid_Tapped" RowSpacing="12" ColumnSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         <FlyoutBase.AttachedFlyout>
             <MenuFlyout Placement="Bottom">
                 <MenuFlyout.MenuFlyoutPresenterStyle>
                     <Style TargetType="MenuFlyoutPresenter">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="MinWidth" Value="336"/>
-                        <Setter Property="Margin" Value="-100,0,0,0"/>
                     </Style>
                 </MenuFlyout.MenuFlyoutPresenterStyle>
                 <MenuFlyoutSeparator />
-                <MenuFlyoutItem Width="336"  Text="Sign in with another account" Click="SwitchAccount_Click" />
-                <MenuFlyoutItem Width="336" Text="Sign out" Click="SignOut_Click" />
+                <MenuFlyoutItem x:Name="signInItem" Width="336"  Text="Sign in" Click="SignIn_Click" />
+                <MenuFlyoutItem Visibility="Collapsed" x:Name="switchItem" Width="336"  Text="Sign in with another account" Click="SwitchAccount_Click" />
+                <MenuFlyoutItem Visibility="Collapsed" x:Name="signOutItem" Width="336" Text="Sign out" Click="SignOut_Click" />
             </MenuFlyout>
         </FlyoutBase.AttachedFlyout>
-        <Ellipse Height="96" Width="96" Margin="7,7,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Ellipse Grid.RowSpan="2" Height="96" Width="96" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Ellipse.Fill>
                 <ImageBrush x:Name="profilePic" ImageSource="Assets/person-placeholder.jpg" Stretch="UniformToFill"/>
             </Ellipse.Fill>
         </Ellipse>
-        <TextBlock x:Name="displayName" HorizontalAlignment="Left" Height="30" Margin="110,15,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240" FontWeight="Bold" FontSize="18"/>
-        <TextBlock x:Name="emailName" HorizontalAlignment="Left" Height="30" Margin="110,61,-10,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Width="240"/>
+        <TextBlock Grid.Column="1" x:Name="displayName" HorizontalAlignment="Left" Height="30" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="18"/>
+        <TextBlock Grid.Column="1" Grid.Row="1" x:Name="emailName" HorizontalAlignment="Left" Height="30" TextWrapping="Wrap" VerticalAlignment="Top" />
     </Grid>
 </UserControl>
