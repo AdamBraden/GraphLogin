@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,13 +28,13 @@ namespace GraphLoginSample
             this.InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            login.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
-            //System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
-            login.SignInAsync();
+        //private void Button_Click(object sender, RoutedEventArgs e)
+        //{
+        //    login.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
+        //    //System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
+        //    login.SignInAsync();
 
-        }
+        //}
 
         private async void login_SignInCompleted(object sender, GraphLogin.SignInEventArgs e)
         {
@@ -42,6 +42,13 @@ namespace GraphLoginSample
             Microsoft.Graph.User loggedInUser = await graphClient.Me.Request().GetAsync();
 
             System.Diagnostics.Debug.WriteLine(loggedInUser.DisplayName);
+            debugOutput.Text = "User logged in:" + loggedInUser?.DisplayName + "\r\n";
+            debugOutput.Text += "User logged in:" + loggedInUser?.JobTitle + "\r\n";
+        }
+
+        private void login_SignOutCompleted(object sender, RoutedEventArgs e)
+        {
+            debugOutput.Text = "User logged out";
         }
     }
 }
