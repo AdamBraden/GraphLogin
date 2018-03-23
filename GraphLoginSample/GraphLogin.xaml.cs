@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -94,6 +94,9 @@ namespace GraphLoginSample
 
             //fire event for consumers
             SignOutCompleted?.Invoke(this, e);
+            signInItem.Visibility = Visibility.Visible;
+            signOutItem.Visibility = Visibility.Collapsed;
+            switchItem.Visibility = Visibility.Collapsed;
 
         }
 
@@ -121,6 +124,9 @@ namespace GraphLoginSample
 
                 //see if anyone is listening
                 SignInCompleted?.Invoke(this, new SignInEventArgs(_client));
+                signInItem.Visibility = Visibility.Collapsed;
+                signOutItem.Visibility = Visibility.Visible;
+                switchItem.Visibility = Visibility.Visible;
             }
 
 
@@ -236,6 +242,13 @@ namespace GraphLoginSample
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
+
+        private void SignIn_Click(object sender, RoutedEventArgs e)
+        {
+            this.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
+            //System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
+            SignInAsync();
         }
     }
 }
