@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="GraphLoginSample.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,9 +7,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button Content="Button" HorizontalAlignment="Left" Height="183" Margin="162,361,0,0" VerticalAlignment="Top" Width="396" Click="Button_Click"/>
-        <local:GraphLogin x:Name="login" HorizontalAlignment="Left" Height="113" Margin="143,104,0,0" VerticalAlignment="Top" Width="585" SignInCompleted="login_SignInCompleted"/>
-
+    <Grid Padding="24" RowSpacing="25" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Style="{ThemeResource SubheaderTextBlockStyle}" 
+                   Text="This is a demonstration of the Graph login control. Tap the image below to sign in to Microsoft Graph" TextWrapping="WrapWholeWords" />
+        <!--<Button Content="Button" HorizontalAlignment="Left" Height="183" Margin="162,361,0,0" VerticalAlignment="Top" Width="396" Click="Button_Click"/>-->
+        <local:GraphLogin Grid.Row="1" x:Name="login" HorizontalAlignment="Left" Margin="12"
+                          SignInCompleted="login_SignInCompleted"
+                          SignOutCompleted="login_SignOutCompleted"/>
+        <TextBlock Grid.Row="2" Style="{ThemeResource BodyTextBlockStyle}" x:Name="debugOutput" HorizontalAlignment="Left" 
+                   TextWrapping="Wrap" Foreground="Maroon" VerticalAlignment="Bottom" />
     </Grid>
 </Page>
