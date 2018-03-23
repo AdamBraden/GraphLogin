@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ApplicationSettings;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -21,6 +22,7 @@ using System.Net.Http.Headers;
 using Windows.Security.Authentication.Web.Core;
 using Windows.Storage.Streams;
 using Windows.Security.Authentication.Web;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -29,9 +31,17 @@ namespace GraphLoginSample
 {
     public sealed partial class GraphLogin : UserControl
     {
+        //for most Enteprise apps, we only care about AAD version of MSGraph
+        private const string MicrosoftAccountProvider = "https://login.microsoft.com";
+        private const string MicrosoftGraphResource = "https://graph.microsoft.com";    //Microsoft Graph
+        private const string MicrosoftCommonAuthority = "https://login.microsoftonline.com/common/";  //for use with ADAL
+        private const string EnterpriseAuthority = "organizations";
+        
         private ViewStyle _view = ViewStyle.SmallProfile;
         private BitmapImage _backgroundImage = null;
         private User _currentUser = null;
+        private string _tenant = "";
+
 
         public enum ViewStyle
         {
@@ -73,6 +83,8 @@ namespace GraphLoginSample
             }
         }
 
+        public string Tenant { get => _tenant; set => _tenant = value; }
+
         public GraphLogin()
         {
             this.InitializeComponent();
@@ -112,8 +124,9 @@ namespace GraphLoginSample
 
             //update UI
             var _user = await _client.Me.Request().GetAsync();
-            var _pic = await _client.Me.Photo.Content.Request().GetAsync();
             LoadUserInfo(_user);
+
+            var _pic = await _client.Me.Photo.Content.Request().GetAsync();
             LoadProfilePicture(_pic);
 
             //if the user changed, fire the event
@@ -129,43 +142,67 @@ namespace GraphLoginSample
                 switchItem.Visibility = Visibility.Visible;
             }
 
-
         }
 
         private async Task<string> GetTokenForUserAsync(bool Prompt = false)
         {
-            //for most Enteprise apps, we only care about AAD version of MSGraph
-            string authority = "organizations";
-            string resource = "https://graph.microsoft.com";    //Microsoft Graph
-            string TokenForUser = null;
-            WebTokenRequestPromptType _prompt = WebTokenRequestPromptType.Default;
-
-            var wap = await WebAuthenticationCoreManager.FindAccountProviderAsync("https://login.microsoft.com", authority);
-            
-            //WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host = "";
-
-
-            // craft the token request for the Graph api
-            //What is the correct scope?
+            string tokenForUser = null;
+            Windows.Security.Credentials.WebAccountProvider wap = null;
+           
             Scope = "";  //null will cause an error
 
-            if (Prompt == true) { _prompt = WebTokenRequestPromptType.ForceAuthentication; }
-            
+            //check if the user is attempting to signin with a different account
+            if (Prompt == true)
+            {
+                //use ADAL 
+                AuthenticationResult authResult;
+                var authContext = new AuthenticationContext(MicrosoftCommonAuthority + _tenant);
 
-            WebTokenRequest wtr = new WebTokenRequest(wap, Scope, ClientId, _prompt);
-            wtr.Properties.Add("resource", resource);
-            
-            WebTokenRequestResult wtrr = await WebAuthenticationCoreManager.RequestTokenAsync(wtr);
-            
-            if (wtrr.ResponseStatus == WebTokenRequestStatus.Success)
-            {
-                TokenForUser = wtrr.ResponseData[0].Token;
+                try
+                {
+                    //authContext = new AuthenticationContext(authContext.TokenCache.ReadItems().First().Authority);
+                    authResult = await authContext.AcquireTokenSilentAsync(MicrosoftGraphResource, ClientId);
+                }
+                catch (AdalSilentTokenAcquisitionException)
+                {
+                    var redirectURI = new Uri("ms-appx-web://microsoft.aad.brokerplugin/" + WebAuthenticationBroker.GetCurrentApplicationCallbackUri());
+
+                    try
+                    {
+                        authResult = await authContext.AcquireTokenAsync(MicrosoftGraphResource, ClientId, redirectURI, new PlatformParameters(PromptBehavior.Auto, false));
+                    }
+                    catch (AdalException ex)
+                    {
+                        if (ex.ErrorCode != "authentication_canceled")
+                        {
+                            System.Diagnostics.Debug.WriteLine(string.Format("Authentication error, please contact your administrator.\n\nError: {0}\n\nError Description:\n\n{1}", ex.ErrorCode, ex.Message));
+                        }
+                        return "";
+                    }
+
+                }
+
+                tokenForUser = authResult.AccessToken;
+                
             }
-            else
+            else   //use WAM
             {
-                System.Diagnostics.Debug.WriteLine(wtrr.ResponseError);
+                wap = await WebAuthenticationCoreManager.FindAccountProviderAsync(MicrosoftAccountProvider, EnterpriseAuthority);
+                WebTokenRequest wtr = new WebTokenRequest(wap, Scope, ClientId);
+                wtr.Properties.Add("resource", MicrosoftGraphResource);
+                WebTokenRequestResult wtrr = await WebAuthenticationCoreManager.RequestTokenAsync(wtr);
+                if (wtrr.ResponseStatus == WebTokenRequestStatus.Success)
+                {
+                    tokenForUser = wtrr.ResponseData[0].Token;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine(wtrr.ResponseError);
+                }
+
             }
-            return TokenForUser;
+
+            return tokenForUser;
         }
 
 
@@ -182,8 +219,6 @@ namespace GraphLoginSample
         //load the users profile picture
         private async void LoadProfilePicture(Stream photoStream)
         {
-
-            //TODO - load profile picture
             //must convert System.IO.Stream into something UWP can use
             // taken from: https://stackoverflow.com/questions/7669311/is-there-a-way-to-convert-a-system-io-stream-to-a-windows-storage-streams-irando
 
