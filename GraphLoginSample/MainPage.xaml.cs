@@ -50,5 +50,11 @@ namespace GraphLoginSample
         {
             debugOutput.Text = "User logged out";
         }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            login.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
+            login.Tenant = "microsoft.onmicrosoft.com";
+        }
     }
 }

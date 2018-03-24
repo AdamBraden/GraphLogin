@@ -281,7 +281,7 @@ namespace GraphLoginSample
 
         private void SignIn_Click(object sender, RoutedEventArgs e)
         {
-            this.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
+            //this.ClientId = "935c61af-136a-4671-b4f6-cabf7964bfb4";
             //System.Diagnostics.Debug.WriteLine(WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
             SignInAsync();
         }
